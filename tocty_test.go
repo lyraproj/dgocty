@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/lyraproj/dgo/dgocty"
 	"github.com/lyraproj/dgo/vf"
+	"github.com/lyraproj/dgocty"
 )
 
 func ExampleToCty_mixed() {
