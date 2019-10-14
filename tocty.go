@@ -10,7 +10,10 @@ import (
 
 // ToCty converts a dgo.Value into its corresponding cty.Value. dgo.Types that are not recognized
 // will be converted to cty.Capsule values. dgo.Sensitive values will be unwrapped.
-func ToCty(v dgo.Value) cty.Value {
+//
+// If attemptExplicit is true, then a cty.ListVal will be used instead of a cty.TupleVal and a cty.MapVal will be used
+// instead of a cty.ObjectVal in cases when all values are of the same cty.Type.
+func ToCty(v dgo.Value, attemptExplicit bool) cty.Value {
 	var cv cty.Value
 	switch v := v.(type) {
 	case dgo.String:
@@ -22,9 +25,9 @@ func ToCty(v dgo.Value) cty.Value {
 	case dgo.Boolean:
 		cv = cty.BoolVal(v.GoBool())
 	case dgo.Array:
-		cv = toArray(v)
+		cv = toArray(v, attemptExplicit)
 	case dgo.Map:
-		cv = toMap(v)
+		cv = toMap(v, attemptExplicit)
 	case dgo.Nil:
 		cv = cty.NullVal(cty.DynamicPseudoType)
 	default:
@@ -33,18 +36,20 @@ func ToCty(v dgo.Value) cty.Value {
 	return cv
 }
 
-func toArray(v dgo.Array) cty.Value {
+func toArray(v dgo.Array, attemptExplicit bool) cty.Value {
 	top := v.Len()
 	et := cty.DynamicPseudoType
-	useList := true
+	useList := attemptExplicit
 	cvs := make([]cty.Value, top)
 	for i := 0; i < top; i++ {
-		ev := ToCty(v.Get(i))
+		ev := ToCty(v.Get(i), attemptExplicit)
 		cvs[i] = ev
-		if et == cty.DynamicPseudoType {
-			et = ev.Type()
-		} else if !et.Equals(ev.Type()) {
-			useList = false
+		if useList {
+			if et == cty.DynamicPseudoType {
+				et = ev.Type()
+			} else if !et.Equals(ev.Type()) {
+				useList = false
+			}
 		}
 	}
 	if useList {
@@ -53,17 +58,19 @@ func toArray(v dgo.Array) cty.Value {
 	return cty.TupleVal(cvs)
 }
 
-func toMap(v dgo.Map) cty.Value {
+func toMap(v dgo.Map, attemptExplicit bool) cty.Value {
 	et := cty.DynamicPseudoType
-	useMap := true
+	useMap := attemptExplicit
 	cvs := make(map[string]cty.Value, v.Len())
 	v.EachEntry(func(e dgo.MapEntry) {
-		ev := ToCty(e.Value())
+		ev := ToCty(e.Value(), attemptExplicit)
 		cvs[e.Key().String()] = ev
-		if et == cty.DynamicPseudoType {
-			et = ev.Type()
-		} else if !et.Equals(ev.Type()) {
-			useMap = false
+		if useMap {
+			if et == cty.DynamicPseudoType {
+				et = ev.Type()
+			} else if !et.Equals(ev.Type()) {
+				useMap = false
+			}
 		}
 	})
 	if useMap {
