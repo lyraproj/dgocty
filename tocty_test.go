@@ -22,6 +22,13 @@ func ExampleToCty_list() {
 	// Output: cty.ListVal([]cty.Value{cty.StringVal("a"), cty.StringVal("b")})
 }
 
+func ExampleToCty_autoTuple() {
+	v := vf.Values("a", 2)
+	c := dgocty.ToCty(v, true)
+	fmt.Println(c.GoString())
+	// Output: cty.TupleVal([]cty.Value{cty.StringVal("a"), cty.NumberIntVal(2)})
+}
+
 func ExampleToCty_forcedTuple() {
 	v := vf.Strings("a", "b")
 	c := dgocty.ToCty(v, false)
@@ -34,6 +41,13 @@ func ExampleToCty_map() {
 	c := dgocty.ToCty(v, true)
 	fmt.Println(c.GoString())
 	// Output: cty.MapVal(map[string]cty.Value{"a":cty.NumberIntVal(1), "b":cty.NumberIntVal(2)})
+}
+
+func ExampleToCty_autoObject() {
+	v := vf.Map("a", 1, "b", `two`)
+	c := dgocty.ToCty(v, true)
+	fmt.Println(c.GoString())
+	// Output: cty.ObjectVal(map[string]cty.Value{"a":cty.NumberIntVal(1), "b":cty.StringVal("two")})
 }
 
 func ExampleToCty_forcedObject() {
