@@ -33,7 +33,7 @@ func FromCty(cv cty.Value) dgo.Value {
 		})
 		v = vf.Array(vs)
 	case cvt.IsMapType(), cvt.IsObjectType():
-		m := vf.MutableMap(nil)
+		m := vf.MutableMap()
 		cv.ForEachElement(func(k, v cty.Value) bool {
 			m.Put(FromCty(k), FromCty(v))
 			return false

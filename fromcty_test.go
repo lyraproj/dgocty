@@ -18,7 +18,7 @@ func ExampleFromCty_mixed() {
 	} else {
 		fmt.Println(dgocty.FromCty(v))
 	}
-	// Output: {"a":1.0,"b":["c",3.14,true]}
+	// Output: {"a":1.0,"b":{"c",3.14,true}}
 }
 
 func TestFromCty_null(t *testing.T) {
